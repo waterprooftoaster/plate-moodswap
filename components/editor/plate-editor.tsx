@@ -95,14 +95,22 @@ export function PlateEditor(): React.ReactNode {
                     },
                 }),
             ],
-            
+            value: () => {
+                if (typeof window !== 'undefined') {
+                    const savedValue = localStorage.getItem(mood);
+                    if (savedValue) {
+                        return JSON.parse(savedValue);
+                    }
+                }
+                return INITIAL_VALUE;
+            },
         },
         [roomName]
     );
 
     React.useEffect(() => {
         if (!mounted) return;
-        const saved = localStorage.getItem(`doc-${roomName}`);
+        const saved = localStorage.getItem(mood);
         const initial = saved ? JSON.parse(saved) : INITIAL_VALUE;
         editor.getApi(YjsPlugin).yjs.init({
             id: roomName,
