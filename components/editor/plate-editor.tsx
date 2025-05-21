@@ -1,21 +1,20 @@
 'use client';
-// from libraries
+// plugins
 import * as React from 'react';
 import { YjsPlugin } from '@udecode/plate-yjs/react';
 import {
     Plate,
     usePlateEditor,
 } from '@udecode/plate/react';
-import { RefreshCw } from 'lucide-react';
 import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
-import { AIPlugin, AIChatPlugin } from '@udecode/plate-ai/react';
+import { subscribeToAIResponse } from '@/components/editor/use-ai';
 
 // ui
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SlashInputElement } from '@/components/ui/slash-input-element';
 import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
-import { AIMenu } from '@/components/ui/ai-menu';
+import { RefreshCw } from 'lucide-react';
 
 // hook
 import { useMounted } from '@/hooks/use-mounted';
@@ -25,15 +24,18 @@ import { useCollaborationRoom,
          CollaborativeEditor,
          useCollaborationUser
 } from './use-collaboration';
-import { createAIEditor,
-         PROMPT_TEMPLATES,
-} from './use-ai-editor';
 
 // start of the code
+//allow editor to know its mood
+let mood: 'happy' | 'sad' = 'happy';
+export function setMood(newMood: 'happy' | 'sad') {
+  mood = newMood;
+}
+
 const INITIAL_VALUE = [
     {
         children: [{ text: 'write something' }],
-        type: 'p',
+        type: 'p'
     },
 ];
 
@@ -42,37 +44,18 @@ export function PlateEditor(): React.ReactNode {
     const { generateNewRoom, roomName, handleRoomChange } =
         useCollaborationRoom();
     const { cursorColor, username } = useCollaborationUser();
+    const currentHref = mounted ? window.location.href : '#';
+
     const editor = usePlateEditor ({
+            id: mood,
+            skipInitialization: true,
             components : {
                 // ...otherComponents,
                 [SlashInputPlugin.key]: SlashInputElement,
-                [AIPlugin.key]: AIMenu,
               },
-            plugins: [ 
+            plugins: [
                 // ...otherPlugins,
                 SlashPlugin,
-                AIPlugin,
-                AIChatPlugin.configure({
-                options: {
-                createAIEditor,
-                promptTemplate: ({ isBlockSelecting, isSelecting }) => {
-                    return isBlockSelecting
-                    ? PROMPT_TEMPLATES.userBlockSelecting
-                    : isSelecting
-                        ? PROMPT_TEMPLATES.userSelecting
-                        : PROMPT_TEMPLATES.userDefault;
-                },
-                systemTemplate: ({ isBlockSelecting, isSelecting }) => {
-                    return isBlockSelecting
-                    ? PROMPT_TEMPLATES.systemBlockSelecting
-                    : isSelecting
-                        ? PROMPT_TEMPLATES.systemSelecting
-                        : PROMPT_TEMPLATES.systemDefault;
-                },
-                },
-    render: { afterEditable: () => <AIMenu /> },
-  }),
-                
                 YjsPlugin.configure({
                     options: {
                         cursors: {
@@ -106,17 +89,7 @@ export function PlateEditor(): React.ReactNode {
                     },
                 }),
             ],
-            // hydrates editor from localStorage
-            value: () => {
-                if (typeof window !== 'undefined') {
-                    const savedValue = localStorage.getItem(`doc-${roomName}`);
-                    if (savedValue) {
-                        return JSON.parse(savedValue);
-                    }
-                }
-                return INITIAL_VALUE;
-            },
-            skipInitialization: true,
+            
         },
         [roomName]
     );
@@ -134,6 +107,30 @@ export function PlateEditor(): React.ReactNode {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editor, mounted]);
+
+        React.useEffect(() => {
+        const unsubscribe = subscribeToAIResponse((newContent) => {
+            if (!newContent || !editor) return;
+            // 1. Delete entire content
+            editor.tf.delete({
+            at: [], // delete entire document
+            unit: 'block',
+            voids: true,
+            });
+
+            // 2. Insert the new content as a single paragraph node
+            editor.tf.insertNodes({
+            type: 'p',
+            children: [{ text: newContent }],
+            }, {
+            at: [0],
+            select: true,
+            });
+        });
+
+        return unsubscribe;
+        }, [editor]);
+
     return (
         <div className="flex flex-col">
             <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
@@ -165,7 +162,7 @@ export function PlateEditor(): React.ReactNode {
                     You can{' '}
                     <a
                         className="underline underline-offset-4 transition-colors hover:text-primary"
-                        href={typeof window === 'undefined' ? '#' : window.location.href}
+                        href={currentHref}
                         rel="noopener noreferrer"
                         target="_blank"
                     >
@@ -176,17 +173,8 @@ export function PlateEditor(): React.ReactNode {
                     identification.
                 </p>
                 <div className="mt-2">
-                    <strong>About this demo:</strong>
-                    <ul className="mt-1 list-inside list-disc">
-                        <li>
-                            Share your Room ID with others to collaborate in the same document
-                        </li>
-                        <li>Limited to 10 concurrent participants per room</li>
-                        <li>
-                            Using WebRTC with public signaling servers - for demo purposes
-                            only
-                        </li>
-                    </ul>
+                    <strong>Type "/" for mood change:</strong>
+                    <ul className="mt-1 list-inside list-disc"> </ul>
                 </div>
             </div>
             <div className="flex-1 overflow-hidden border-t">
@@ -194,7 +182,7 @@ export function PlateEditor(): React.ReactNode {
                     editor={editor}
                     // localStorage saves editor to survive reloads
                     onChange={({ value }) => {
-                        localStorage.setItem(`doc-${roomName}`, JSON.stringify(value));
+                        localStorage.setItem(mood, JSON.stringify(value));
                     }}
                 >
                     <CollaborativeEditor cursorColor={cursorColor} username={username} />

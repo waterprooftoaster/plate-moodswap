@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 
 export function CollaborativeEditor({
-                                 cursorColor,
-                                 username,
-                             }: {
+                                        cursorColor,
+                                        username,
+                                    }: {
     cursorColor: string;
     username: string;
 }): React.ReactNode {
@@ -101,6 +101,7 @@ export function useCollaborationUser() {
         username,
     };
 }
+
 const getRandomColor = (): string => {
     const letters = '0123456789ABCDEF';
     let color = '#';
