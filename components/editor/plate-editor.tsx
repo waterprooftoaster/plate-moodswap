@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SlashInputElement } from '@/components/ui/slash-input-element';
 import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
+import { RenderLeafProps } from '@udecode/plate/react';
+
 
 import { RefreshCw } from 'lucide-react';
 
@@ -50,6 +52,7 @@ export function PlateEditor(): React.ReactNode {
     const currentHref = mounted ? window.location.href : '#';
 
     const editor = usePlateEditor ({
+
             id: mood,
             skipInitialization: true,
             components : {
@@ -58,9 +61,6 @@ export function PlateEditor(): React.ReactNode {
               },
             plugins: [
                 // ...otherPlugins,
-                CursorOverlayPlugin.configure({
-                    render: { afterEditable: () => <CursorOverlay /> },
-                }),
                 SlashPlugin,
                 YjsPlugin.configure({
                     options: {
@@ -99,6 +99,7 @@ export function PlateEditor(): React.ReactNode {
         },
         [roomName]
     );
+
     React.useEffect(() => {
         if (!mounted) return;
         const saved = localStorage.getItem(`doc-${roomName}`);
