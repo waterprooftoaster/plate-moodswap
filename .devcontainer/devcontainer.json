@@ -1,0 +1,11 @@
+{
+    "name": "Next.js + Plate.js",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "web",
+    "workspaceFolder": "/app",
+    "extensions": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode"
+    ],
+    "postCreateCommand": "npm install"
+  }
