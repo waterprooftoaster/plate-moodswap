@@ -31,7 +31,7 @@ export function SlashInputElement(
             <div className="mr-2 text-muted-foreground">
               <SparklesIcon />
             </div>
-            flip the mood
+            click me to change the mood
           </InlineComboboxItem>
         </InlineComboboxContent>
       </InlineCombobox>

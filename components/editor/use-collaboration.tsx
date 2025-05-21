@@ -92,14 +92,15 @@ export function useCollaborationRoom() {
 
 // Hook for managing user/cursor state
 export function useCollaborationUser() {
-    const [username] = React.useState(
-        () => `user-${Math.floor(Math.random() * 1000)}`
-    );
-    const [cursorColor] = React.useState(() => getRandomColor());
-    return {
-        cursorColor,
-        username,
-    };
+    const [username, setUsername]     = React.useState('');
+    const [cursorColor, setCursorColor] = React.useState('');
+
+    React.useEffect(() => {
+        setUsername(`user-${Math.floor(Math.random() * 1000)}`);
+        setCursorColor(getRandomColor());
+    }, []);
+
+    return { cursorColor, username };
 }
 
 const getRandomColor = (): string => {

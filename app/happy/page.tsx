@@ -1,17 +1,21 @@
 'use client';
 import { useEffect } from 'react';
-import {PlateEditor,
-        setMood
-} from '@/components/editor/plate-editor';
+import { setMood } from '@/components/editor/plate-editor';
+import dynamic from 'next/dynamic';
+
+const PlateEditor = dynamic(
+    () => import('@/components/editor/plate-editor').then(mod => mod.PlateEditor),
+    { ssr: false }
+);
 
 export default function HappyPage() {
   useEffect(() => {
-    setMood('happy'); // Or however your setMood function works
+    setMood('happy');
   }, []);
 
   return (
     <main className="p-8 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-4">Happy Editor</h1>
+      <h1 className="text-3xl font-bold mb-4">Make Words Happy :)</h1>
       <PlateEditor />
     </main>
   );

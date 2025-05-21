@@ -8,12 +8,15 @@ import {
 } from '@udecode/plate/react';
 import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
 import { subscribeToAIResponse } from '@/components/editor/use-ai';
+import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
+import { CursorOverlay } from '@/components/ui/cursor-overlay';
 
 // ui
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SlashInputElement } from '@/components/ui/slash-input-element';
 import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
+
 import { RefreshCw } from 'lucide-react';
 
 // hook
@@ -55,6 +58,9 @@ export function PlateEditor(): React.ReactNode {
               },
             plugins: [
                 // ...otherPlugins,
+                CursorOverlayPlugin.configure({
+                    render: { afterEditable: () => <CursorOverlay /> },
+                }),
                 SlashPlugin,
                 YjsPlugin.configure({
                     options: {
